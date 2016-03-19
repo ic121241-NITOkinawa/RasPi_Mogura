@@ -36,9 +36,19 @@ print("programm start\n")
 
 try:
     while true:
-        if ():
-
+        if (not GPIO.input(SW1)):
+            GPIO.output(LD1, GPIO.HIGH)
+        if (not GPIO.input(SW2)):
+            GPIO.output(LD2, GPIO.HIGH)
+        if (not GPIO.input(SW3)):
+            GPIO.output(LD3, GPIO.HIGH)
+        if (not GPIO.input(SW4)):
+            GPIO.output(LD4, GPIO.HIGH)
         else :
+            GPIO.output(LD1, GPIO.LOW)
+            GPIO.output(LD2, GPIO.LOW)
+            GPIO.output(LD3, GPIO.LOW)
+            GPIO.output(LD4, GPIO.LOW)
 except KeyboardInterrupt:
     print("detect key interrupt\n")
 finally:
