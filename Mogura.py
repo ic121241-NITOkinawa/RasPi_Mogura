@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import RPi.GPIO as GPIO
+import time
 
 #ボードの番号で設定(目で見て数えるやつ)
 GPIO.setmode(GPIO.BOARD)
@@ -30,3 +31,16 @@ GPIO.setup(SW4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 SP = 40
 #スピーカーのポート宣言
 GPIO.setup(SP, GPIO.OUT)
+
+print("programm start\n")
+
+try:
+    while true:
+        if ():
+
+        else :
+except KeyboardInterrupt:
+    print("detect key interrupt\n")
+finally:
+    GPIO.cleanup()
+    print("program exit\n")
