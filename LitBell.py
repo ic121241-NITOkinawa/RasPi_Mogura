@@ -66,8 +66,8 @@ try:
                     Lit(LD1, true)
                     time.sleep(2)
 
-        GPIO.output(LD1, false)
-        sleep(1000)
+            GPIO.output(LD1, false)
+            sleep(1000)
 
 except KeyboardInterrupt:
     print("detect key interrupt\n")
