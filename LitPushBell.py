@@ -48,26 +48,41 @@ points = 0
 def Lit(gpioNo, status)
     GPIO.output(gpioNo, status)
 
-def Bell(melody, time)
-    Bell.ChangeFrequency(melody)
-    time.sleep(100)
+def HitBell()
+    Bell.ChangeFrequency(mel_C)
+    time.sleep(50)
+    Bell.ChangeFrequency(mel_D)
+    time.sleep(50)
+    Bell.ChangeFrequency(mel_E)
+    time.sleep(50)
     Bell.ChangeFreauency(0)
-                
+
+def MissBell()
+    Bell.ChangeFrequency(100)
+    time.sleep(50)
+    Bell.ChangeFrequency(100)
+    time.sleep(100)
+    Bell.ChangeFrequency(0)
 
 print("programm start\n")
 try:
     while true:
         for i in range(0, 10):
             for j in range(1, 500):
+                if (GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3) and GPIO.input(SW4)):
+                        MissBell();
+                        break
                 if (GPIO.input(SW1)):
-                        Bell(mel_D)
+                        HitBell()
                         break
                 else:
                     Lit(LD1, true)
                     time.sleep(2)
+                if (j == 499):
+                    MissBell()
 
-        GPIO.output(LD1, false)
-        sleep(1000)
+            Lit(LD1, false)
+            sleep(1000)
 
 except KeyboardInterrupt:
     print("detect key interrupt\n")
