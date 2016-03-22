@@ -70,7 +70,8 @@ try:
         for i in range(0, 10):
             for j in range(1, 500):
                 if (GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3) and GPIO.input(SW4)):
-                        MissBell();
+                        MissBell()
+                        MissBell()
                         break
                 if (GPIO.input(SW1)):
                         HitBell()
