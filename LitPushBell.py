@@ -2,93 +2,117 @@
 import RPi.GPIO as GPIO
 import time
 
-#ƒ{[ƒh‚Ì”Ô†‚Åİ’è(–Ú‚ÅŒ©‚Ä”‚¦‚é‚â‚Â)
+#ãƒœãƒ¼ãƒ‰ã®ç•ªå·ã§è¨­å®š(ç›®ã§è¦‹ã¦æ•°ãˆã‚‹ã‚„ã¤)
 GPIO.setmode(GPIO.BOARD)
 
-#LED’è‹`
+#LEDå®šç¾©
 LD1 = 19
 LD2 = 21
 LD3 = 23
 LD4 = 27
-#LED‚Ìƒ|[ƒgéŒ¾
+#LEDã®ãƒãƒ¼ãƒˆå®£è¨€
 GPIO.setup(LD1, GPIO.OUT)
 GPIO.setup(LD2, GPIO.OUT)
 GPIO.setup(LD3, GPIO.OUT)
 GPIO.setup(LD4, GPIO.OUT)
+#LEDæ¶ˆç¯
+GPIO.output(LD1, GPIO.LOW)
+GPIO.output(LD2, GPIO.LOW)
+GPIO.output(LD3, GPIO.LOW)
+GPIO.output(LD4, GPIO.LOW)
 
-#SW’è‹`
+#SWå®šç¾©
 SW1 = 31
 SW2 = 33
 SW3 = 35
 SW4 = 37
-#SW‚Ìƒ|[ƒgéŒ¾
+#SWã®ãƒãƒ¼ãƒˆå®£è¨€
 GPIO.setup(SW1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(SW2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(SW3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(SW4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-#ƒXƒs[ƒJ[’è‹`
+#ã‚¹ãƒ”ãƒ¼ã‚«ãƒ¼å®šç¾©
 SP = 40
-#ƒXƒs[ƒJ[‚Ìƒ|[ƒgéŒ¾
+#ã‚¹ãƒ”ãƒ¼ã‚«ãƒ¼ã®ãƒãƒ¼ãƒˆå®£è¨€
 GPIO.setup(SP, GPIO.OUT)
 
-#ƒfƒ…[ƒeƒB[ƒTƒCƒNƒ‹’è‹`
-DC = 50
-#•½‹Ï(‚µ‚©‚àØ‚èã‚°)—¥‰¹ŠKü”g” C D E ’è‹`
-mel_C = 262 #ƒh
-mel_D = 294 #ƒŒ
-mel_E = 330 #ƒ~
-
-#PWMƒCƒ“ƒXƒ^ƒ“ƒX¶¬
+#PWMã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ç”Ÿæˆ
 BELL = GPIO.PWM(SP, 30)
-BELL.start(50)
+BELL.start(50) #ãƒ‡ãƒ¥ãƒ¼ãƒ†ã‚£ãƒ¼ã‚µã‚¤ã‚¯ãƒ«50%å›ºå®š
+BELL.stop()
 
-points = 0
+#å¹³å‡(ã—ã‹ã‚‚åˆ‡ã‚Šä¸Šã’)å¾‹éŸ³éšå‘¨æ³¢æ•°
+mel_C = 262 #ãƒ‰
+mel_D = 294 #ãƒ¬
+mel_E = 330 #ãƒŸ
+mel_F = 349 #ãƒ•ã‚¡
+mel_G = 392 #ã‚½
+mel_A = 440 #ãƒ©
+mel_B = 494 #ã‚·
+
+#LEDã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ç”¨ã®å¤‰æ•°
+status_LD1 = False
+status_LD2 = False
+status_LD3 = False
+status_LD4 = False
+
+#æˆåŠŸå›æ•°
+Hits = 0
+#å…¨ä½“ãƒ«ãƒ¼ãƒ—ç”¨
+Loop = 10
 
 def Lit(gpioNo, status)
     GPIO.output(gpioNo, status)
 
 def HitBell()
+    Bell.start(0.05)
     Bell.ChangeFrequency(mel_C)
-    time.sleep(50)
+    time.sleep(0.05)
     Bell.ChangeFrequency(mel_D)
-    time.sleep(50)
+    time.sleep(0.05)
     Bell.ChangeFrequency(mel_E)
-    time.sleep(50)
-    Bell.ChangeFreauency(0)
+    time.sleep(0.05)
+    Bell.stop(0)
 
 def MissBell()
+    Bell.start(50)
     Bell.ChangeFrequency(100)
-    time.sleep(50)
+    time.sleep(0.05)
     Bell.ChangeFrequency(100)
-    time.sleep(100)
-    Bell.ChangeFrequency(0)
+    time.sleep(0.05)
+    Bell.stop(0)
 
-print("programm start\n")
-try:
-    while true:
-        for i in range(0, 10):
-            for j in range(1, 500):
-                if (GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3) and GPIO.input(SW4)):
+def Hit()
+    HitBell()
+    Hits += 1
+
+if __name__ =- '__main__'
+    print("programm start\n")
+    try:
+        while true:
+            for i in range(0, Loop):
+                for j in range(1, 500):
+                    if (GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3) and GPIO.input(SW4)):
                         MissBell()
                         MissBell()
                         break
-                if (GPIO.input(SW1)):
-                        HitBell()
+                    elif (GPIO.output and GPIO.input(SW1)):
+                        Hit()
                         break
-                else:
-                    Lit(LD1, true)
-                    time.sleep(2)
-                if (j == 499):
-                    MissBell()
+                    else:
+                        Lit(LD1, true)
+                        time.sleep(0.002)
+                    if (j == 499):
+                        MissBell()
 
-            Lit(LD1, false)
-            sleep(1000)
+                Lit(LD1, false)
+                sleep(0.001)
 
-except KeyboardInterrupt:
-    print("detect key interrupt\n")
+    except KeyboardInterrupt:
+        print("detect key interrupt\n")
 
-finally:
-    BELL.stop()
-    GPIO.cleanup()
-    print("program exit\n")
+    finally:
+        BELL.stop()
+        GPIO.cleanup()
+        print("program exit\n")
