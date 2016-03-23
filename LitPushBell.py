@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import RPi.GPIO as GPIO
 import time
+import random
 
 #ボードの番号で設定(目で見て数えるやつ)
 GPIO.setmode(GPIO.BOARD)
@@ -57,13 +58,21 @@ status_LD2 = False
 status_LD3 = False
 status_LD4 = False
 
+#時間ランダム用の時間
+wait_times = [300, 400, 500, 600]
+#LEDランダム用の変数
+LEDs = [19, 21, 23, 27]
+
 #成功回数
 Hits = 0
 #全体ループ用
 Loop = 10
 
-def Lit(gpioNo, status)
-    GPIO.output(gpioNo, status)
+def Lit(gpioNo)
+    GPIO.output(gpioNo, True)
+
+def Dark(gpioNo)
+    GPIO.output(gpioNO, False)
 
 def HitBell()
     Bell.start(0.05)
@@ -73,41 +82,48 @@ def HitBell()
     time.sleep(0.05)
     Bell.ChangeFrequency(mel_E)
     time.sleep(0.05)
-    Bell.stop(0)
+    Bell.stop()
 
 def MissBell()
     Bell.start(50)
     Bell.ChangeFrequency(100)
     time.sleep(0.05)
-    Bell.ChangeFrequency(100)
-    time.sleep(0.05)
-    Bell.stop(0)
+    Bell.stop()
 
 def Hit()
     HitBell()
     Hits += 1
 
-if __name__ =- '__main__'
+if __name__ == '__main__'
     print("programm start\n")
     try:
         while true:
             for i in range(0, Loop):
-                for j in range(1, 500):
-                    if (GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3) and GPIO.input(SW4)):
+                randTIME = rand.choice(wait_times)
+
+                for j in range(1, randTime):
+                    #LEDをランダムに光らせる処理を書いてくだちい
+
+                    if (j == randTime - 1):
+                        MissBell()
+                    elif (GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3) and GPIO.input(SW4)):
+                        MissBell()
                         MissBell()
                         MissBell()
                         break
-                    elif (GPIO.output and GPIO.input(SW1)):
+
+                    elif ((status_LD1 and GPIO.input(SW1)) or 
+                          (status_LD2 and GPIO.input(SW2)) or 
+                          (status_LD3 and GPIO.input(SW3)) or 
+                          (status_LD4 and GPIO.input(SW4))):
                         Hit()
                         break
-                    else:
-                        Lit(LD1, true)
-                        time.sleep(0.002)
-                    if (j == 499):
-                        MissBell()
 
-                Lit(LD1, false)
-                sleep(0.001)
+                    else:
+                        MissBell()
+                        time.sleep(0.002)
+
+                sleep(1)
 
     except KeyboardInterrupt:
         print("detect key interrupt\n")
