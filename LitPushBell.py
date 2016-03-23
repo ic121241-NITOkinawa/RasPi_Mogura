@@ -53,10 +53,7 @@ mel_A = 440 #ラ
 mel_B = 494 #シ
 
 #LEDステータス用の変数
-status_LD1 = False
-status_LD2 = False
-status_LD3 = False
-status_LD4 = False
+status_LD = [False, False, False, False]
 
 #時間ランダム用の時間
 wait_times = [300, 400, 500, 600]
@@ -93,6 +90,10 @@ def MissBell()
 def Hit()
     HitBell()
     Hits += 1
+
+def UpdateLED()
+    for i in range (0, 4):
+        GPIO.output(LEDs[i], status_LED[i])
 
 if __name__ == '__main__'
     print("programm start\n")
