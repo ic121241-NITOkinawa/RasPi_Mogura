@@ -7,31 +7,31 @@ import random
 GPIO.setmode(GPIO.BOARD)
 
 #LED定義
-LD1 = 19
-LD2 = 21
-LD3 = 23
-LD4 = 27
+LD0 = 19
+LD1 = 21
+LD2 = 23
+LD3 = 27
 #LEDのポート宣言
+GPIO.setup(LD0, GPIO.OUT)
 GPIO.setup(LD1, GPIO.OUT)
 GPIO.setup(LD2, GPIO.OUT)
 GPIO.setup(LD3, GPIO.OUT)
-GPIO.setup(LD4, GPIO.OUT)
 #LED消灯
+GPIO.output(LD0, GPIO.LOW)
 GPIO.output(LD1, GPIO.LOW)
 GPIO.output(LD2, GPIO.LOW)
 GPIO.output(LD3, GPIO.LOW)
-GPIO.output(LD4, GPIO.LOW)
 
 #SW定義
-SW1 = 31
-SW2 = 33
-SW3 = 35
-SW4 = 37
+SW0 = 31
+SW1 = 33
+SW2 = 35
+SW3 = 37
 #SWのポート宣言
+GPIO.setup(SW0, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(SW1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(SW2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(SW3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(SW4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 #スピーカー定義
 SP = 40
@@ -56,7 +56,8 @@ mel_B = 494 #シ
 status_LD = [False, False, False, False]
 
 #時間ランダム用の時間
-wait_times = [300, 400, 500, 600]
+wait_times0 = [0.800, 1.000, 1.200, 1.500]
+wait_times1 = [0.300, 0.400, 0.500, 0.600]
 #LEDランダム用の変数
 LEDs = [19, 21, 23, 27]
 
@@ -100,23 +101,26 @@ if __name__ == '__main__'
     try:
         while true:
             for i in range(0, Loop):
-                randTIME = rand.choice(wait_times)
+                randTIME = rand.choice(wait_times1)
 
                 for j in range(1, randTime):
                     #LEDをランダムに光らせる処理を書いてくだちい
+                    randLED = random.randint(0,3)
+                    status_LED[randLED] = True
+                    UpdateLED()
 
                     if (j == randTime - 1):
                         MissBell()
-                    elif (GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3) and GPIO.input(SW4)):
+                    elif (GPIO.input(SW0) and GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3)):
                         MissBell()
                         MissBell()
                         MissBell()
                         break
 
-                    elif ((status_LD1 and GPIO.input(SW1)) or 
-                          (status_LD2 and GPIO.input(SW2)) or 
-                          (status_LD3 and GPIO.input(SW3)) or 
-                          (status_LD4 and GPIO.input(SW4))):
+                    elif ((status_LD[0] and GPIO.input(SW1)) or 
+                          (status_LD[1] and GPIO.input(SW2)) or 
+                          (status_LD[2] and GPIO.input(SW3)) or 
+                          (status_LD[3] and GPIO.input(SW4))):
                         Hit()
                         break
 
@@ -124,7 +128,10 @@ if __name__ == '__main__'
                         MissBell()
                         time.sleep(0.002)
 
-                sleep(1)
+                status_LED[randLED] = False
+                UpdateLED()
+                randTIME = rand.choice(wait_times0)
+                sleep(randTIME)
 
     except KeyboardInterrupt:
         print("detect key interrupt\n")
