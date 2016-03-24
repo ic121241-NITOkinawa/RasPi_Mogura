@@ -8,30 +8,15 @@ GPIO.setmode(GPIO.BOARD)
 
 #LED定義
 LD0 = 19
-#LD1 = 21
-#LD2 = 23
-#LD3 = 27
 #LEDのポート宣言
 GPIO.setup(LD0, GPIO.OUT)
-#GPIO.setup(LD1, GPIO.OUT)
-#GPIO.setup(LD2, GPIO.OUT)
-#GPIO.setup(LD3, GPIO.OUT)
 #LED消灯
 GPIO.output(LD0, GPIO.LOW)
-#GPIO.output(LD1, GPIO.LOW)
-#GPIO.output(LD2, GPIO.LOW)
-#GPIO.output(LD3, GPIO.LOW)
 
 #SW定義
-SW0 = 31
-#SW1 = 33
-#SW2 = 35
-#SW3 = 37
+SW0 = 37
 #SWのポート宣言
 GPIO.setup(SW0, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-#GPIO.setup(SW1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-#GPIO.setup(SW2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-#GPIO.setup(SW3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 #スピーカー定義
 SP = 40
@@ -39,9 +24,9 @@ SP = 40
 GPIO.setup(SP, GPIO.OUT)
 
 #PWMインスタンス生成
-BELL = GPIO.PWM(SP, 30)
-BELL.start(50) #デューティーサイクル50%固定
-BELL.stop()
+Bell = GPIO.PWM(SP, 30)
+Bell.start(50) #デューティーサイクル50%
+Bell.stop()
 
 #平均(しかも切り上げ)律音階周波数
 mel_C = 262 #ド
@@ -53,91 +38,145 @@ mel_A = 440 #ラ
 mel_B = 494 #シ
 
 #LEDステータス用の変数
-#status_LD = [False, False, False, False]
 status_LD = False
 
-#時間ランダム用の時間
-wait_times0 = [0.800, 1.000, 1.200, 1.500]
-wait_times1 = [0.300, 0.400, 0.500, 0.600]
+#インターバル用のリスト[s]
+wait_times0 = [0.70, 1.00, 1.50, 1.80]
+#光ってる時間のリスト[ms]
+wait_times1 = [500, 700, 900, 1200]
 #LEDランダム用の変数
-LEDs = [19]#, 21, 23, 27]
+LEDs = [19]
 
 #成功回数
 Hits = 0
 #全体ループ用
 Loop = 10
 
-#def Lit(gpioNo)
-#    GPIO.output(gpioNo, True)
-#
-#def Dark(gpioNo)
-#    GPIO.output(gpioNO, False)
-
-def HitBell()
-    Bell.start(0.05)
-    Bell.ChangeFrequency(mel_C)
-    time.sleep(0.05)
-    Bell.ChangeFrequency(mel_D)
-    time.sleep(0.05)
-    Bell.ChangeFrequency(mel_E)
-    time.sleep(0.05)
-    Bell.stop()
-
-def MissBell()
+#ゲームスタートのときの楽譜
+def StartBell():
     Bell.start(50)
-    Bell.ChangeFrequency(100)
-    time.sleep(0.05)
+    Bell.ChangeFrequency(mel_C * 4)
+    time.sleep(0.2)
+    Bell.stop()
+    time.sleep(0.2)
+    Bell.start(50)
+    Bell.ChangeFrequency(mel_C * 4)
+    time.sleep(0.2)
+    Bell.stop()
+    time.sleep(0.2)
+    Bell.start(30)
+    Bell.ChangeFrequency(mel_C * 6)
+    time.sleep(0.5)
     Bell.stop()
 
-def Hit()
+#もぐらがヒットしたときの楽譜
+def HitBell():
+    print("Miss!")  
+    Bell.start(50)
+    Bell.ChangeFrequency(mel_C * 2)
+    time.sleep(0.25)
+    Bell.ChangeFrequency(mel_D * 2)
+    time.sleep(0.25)
+    Bell.ChangeFrequency(mel_E * 3)
+    time.sleep(0.25)
+    Bell.stop()
+
+#もぐらをヒットできなかったときの楽譜
+def MissBell():
+    print("Miss!")
+    Bell.start(50)
+    Bell.ChangeFrequency(130)
+    time.sleep(0.5)
+    Bell.stop()
+
+#クリアした時の楽譜(よろこびの歌のつもり)
+def ClearBell():
+    Bell.start(50)
+    Bell.ChangeFrequency(mel_E * 2)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_E * 2)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_F * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_G * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_G * 2)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_F * 2)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_E * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_D * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_C * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_C * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_D * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_E * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_D * 3)
+    time.sleep(0.6)
+    Bell.ChangeFrequency(mel_F * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_F * 3)
+    time.sleep(0.6)
+    Bell.stop()
+    
+#もぐらがヒットした時の関数
+def Hit():
+    print("Hit!")
+    global Hits
     HitBell()
     Hits += 1
+    print(Hits)
 
-def UpdateLED()
-    for i in range (0, 1):
-        GPIO.output(LEDs[i], status_LED[i])
+#LEDの状態を更新する関数
+def UpdateLED():
+    GPIO.output(LD0, status_LD)
 
-if __name__ == '__main__'
+if __name__ == '__main__':
     print("programm start\n")
     try:
-        while true:
-            for i in range(0, Loop):
-                randTIME = rand.choice(wait_times1)
+        #無限ループ
+        while True:
+            StartBell() #ゲームスタートの楽譜を鳴らす
+            Hits = 0    #ヒット数を初期化
+            time.sleep(1)   #1秒止まる
 
-                for j in range(1, randTime):
-                    #LEDをランダムに光らせる処理を書いてくだちい
-                    randLED = 0 #random.randint(0,3)
-                    status_LED[randLED] = True
-                    UpdateLED()
+            for i in range(0, Loop):    #Loop回繰り返す
+                randTime = random.choice(wait_times1)   #wait_times1秒後に光らせる
 
-                    if (j == randTime - 1):
-                        MissBell()
-#                    elif (GPIO.input(SW0) and GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3)):
-#                        MissBell()
-#                        MissBell()
-#                        MissBell()
-#                        break
+                for j in range(1, randTime):    #randTime[ms]光る
+                    status_LD = True    #LEDの状態を発光へ
+                    UpdateLED() #LEDの状態を更新
 
-                    elif (status_LD[0] and GPIO.input(SW1)): # or 
-#                          (status_LD[1] and GPIO.input(SW2)) or 
-#                          (status_LD[2] and GPIO.input(SW3)) or 
-#                          (status_LD[3] and GPIO.input(SW4))):
+                    if (j == randTime - 2): #最後まで押せなかったらミス
+                        MissBell()  #ミスした楽譜を鳴らす
+
+                    elif (status_LD and (not GPIO.input(SW0))): #光らせてるLEDに対応したスイッチが押されてたらヒット!
                         Hit()
                         break
 
                     else:
-                        MissBell()
-                        time.sleep(0.002)
+                        time.sleep(0.001)   #1msの遅延を与える
 
-                status_LED[randLED] = False
-                UpdateLED()
-                randTIME = rand.choice(wait_times0)
-                sleep(randTIME)
+                status_LD = False   #LEDの状態を消灯へ
+                UpdateLED() #LEDの状態を更新
+                randTIME = random.choice(wait_times0)   #インターバルをランダムに決める
+                time.sleep(randTIME)    #インターバル発生
+
+            if (Hits > 7):  #ゲームクリア条件
+                ClearBell() #達成していたらクリア楽譜を鳴らす
+            else :  #条件を満たしていなかったら
+                for i in range(0, 6):   #5回繰り返し
+                    MissBell()  #ミス譜面を鳴らす
 
     except KeyboardInterrupt:
         print("detect key interrupt\n")
 
     finally:
-        BELL.stop()
+        Bell.stop()
         GPIO.cleanup()
         print("program exit\n")
