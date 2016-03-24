@@ -170,8 +170,10 @@ if __name__ == '__main__':
             if (Hits > 7):  #ゲームクリア条件
                 ClearBell() #達成していたらクリア楽譜を鳴らす
             else :  #条件を満たしていなかったら
-                for i in range(0, 6):   #5回繰り返し
-                    MissBell()  #ミス譜面を鳴らす
+                for i in range (0, 2):
+                    for j in range(0, 6):   #5回繰り返し
+                        MissBell()  #ミス譜面を鳴らす
+                        time.sleep(0.6)
 
     except KeyboardInterrupt:
         print("detect key interrupt\n")
