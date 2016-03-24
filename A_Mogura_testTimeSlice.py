@@ -8,30 +8,30 @@ GPIO.setmode(GPIO.BOARD)
 
 #LED定義
 LD0 = 19
-LD1 = 21
-LD2 = 23
-LD3 = 27
+#LD1 = 21
+#LD2 = 23
+#LD3 = 27
 #LEDのポート宣言
 GPIO.setup(LD0, GPIO.OUT)
-GPIO.setup(LD1, GPIO.OUT)
-GPIO.setup(LD2, GPIO.OUT)
-GPIO.setup(LD3, GPIO.OUT)
+#GPIO.setup(LD1, GPIO.OUT)
+#GPIO.setup(LD2, GPIO.OUT)
+#GPIO.setup(LD3, GPIO.OUT)
 #LED消灯
 GPIO.output(LD0, GPIO.LOW)
-GPIO.output(LD1, GPIO.LOW)
-GPIO.output(LD2, GPIO.LOW)
-GPIO.output(LD3, GPIO.LOW)
+#GPIO.output(LD1, GPIO.LOW)
+#GPIO.output(LD2, GPIO.LOW)
+#GPIO.output(LD3, GPIO.LOW)
 
 #SW定義
 SW0 = 31
-SW1 = 33
-SW2 = 35
-SW3 = 37
+#SW1 = 33
+#SW2 = 35
+#SW3 = 37
 #SWのポート宣言
 GPIO.setup(SW0, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(SW1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(SW2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(SW3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#GPIO.setup(SW1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#GPIO.setup(SW2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#GPIO.setup(SW3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 #スピーカー定義
 SP = 40
@@ -53,24 +53,25 @@ mel_A = 440 #ラ
 mel_B = 494 #シ
 
 #LEDステータス用の変数
-status_LD = [False, False, False, False]
+#status_LD = [False, False, False, False]
+status_LD = False
 
 #時間ランダム用の時間
 wait_times0 = [0.800, 1.000, 1.200, 1.500]
 wait_times1 = [0.300, 0.400, 0.500, 0.600]
 #LEDランダム用の変数
-LEDs = [19, 21, 23, 27]
+LEDs = [19]#, 21, 23, 27]
 
 #成功回数
 Hits = 0
 #全体ループ用
 Loop = 10
 
-def Lit(gpioNo)
-    GPIO.output(gpioNo, True)
-
-def Dark(gpioNo)
-    GPIO.output(gpioNO, False)
+#def Lit(gpioNo)
+#    GPIO.output(gpioNo, True)
+#
+#def Dark(gpioNo)
+#    GPIO.output(gpioNO, False)
 
 def HitBell()
     Bell.start(0.05)
@@ -93,7 +94,7 @@ def Hit()
     Hits += 1
 
 def UpdateLED()
-    for i in range (0, 4):
+    for i in range (0, 1):
         GPIO.output(LEDs[i], status_LED[i])
 
 if __name__ == '__main__'
@@ -105,22 +106,22 @@ if __name__ == '__main__'
 
                 for j in range(1, randTime):
                     #LEDをランダムに光らせる処理を書いてくだちい
-                    randLED = random.randint(0,3)
+                    randLED = 0 #random.randint(0,3)
                     status_LED[randLED] = True
                     UpdateLED()
 
                     if (j == randTime - 1):
                         MissBell()
-                    elif (GPIO.input(SW0) and GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3)):
-                        MissBell()
-                        MissBell()
-                        MissBell()
-                        break
+#                    elif (GPIO.input(SW0) and GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3)):
+#                        MissBell()
+#                        MissBell()
+#                        MissBell()
+#                        break
 
-                    elif ((status_LD[0] and GPIO.input(SW1)) or 
-                          (status_LD[1] and GPIO.input(SW2)) or 
-                          (status_LD[2] and GPIO.input(SW3)) or 
-                          (status_LD[3] and GPIO.input(SW4))):
+                    elif (status_LD[0] and GPIO.input(SW1)): # or 
+#                          (status_LD[1] and GPIO.input(SW2)) or 
+#                          (status_LD[2] and GPIO.input(SW3)) or 
+#                          (status_LD[3] and GPIO.input(SW4))):
                         Hit()
                         break
 
