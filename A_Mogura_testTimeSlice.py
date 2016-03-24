@@ -160,7 +160,7 @@ if __name__ == '__main__':
                         break
 
                     else:
-                        time.sleep(0.001)   #1msの遅延を与える
+                        time.sleep(0.001)   #1msの遅延を与える,randTime秒の出来事となる
 
                 status_LD = False   #LEDの状態を消灯へ
                 UpdateLED() #LEDの状態を更新
