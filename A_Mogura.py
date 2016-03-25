@@ -56,8 +56,8 @@ mel_B = 494 #シ
 status_LD = [False, False, False, False]
 
 #時間ランダム用の時間
-wait_times0 = [0.800, 1.000, 1.200, 1.500]
-wait_times1 = [0.300, 0.400, 0.500, 0.600]
+wait_times0 = [0.700, 1.000, 1.500, 1.800]
+wait_times1 = [500, 700, 900, 1200]
 #LEDランダム用の変数
 LEDs = [19, 21, 23, 27]
 
@@ -66,13 +66,24 @@ Hits = 0
 #全体ループ用
 Loop = 10
 
-def Lit(gpioNo)
-    GPIO.output(gpioNo, True)
 
-def Dark(gpioNo)
-    GPIO.output(gpioNO, False)
-
-def HitBell()
+#ゲームスタートのときの楽譜
+def StartBell():
+    print("Game Start")
+    Bell.start(50)
+    Bell.ChangeFrequency(mel_C * 4)
+    time.sleep(0.2)
+    Bell.stop()
+    time.sleep(0.2)
+    Bell.start(50)
+    Bell.ChangeFrequency(mel_C * 4)
+    time.sleep(0.2)
+    Bell.stop()
+    time.sleep(0.2)
+    Bell.start(20)
+    Bell.ChangeFrequency(mel_C * 6)
+    time.sleep(0.5)
+    Bell.stop()def HitBell()
     Bell.start(0.05)
     Bell.ChangeFrequency(mel_C)
     time.sleep(0.05)
@@ -81,33 +92,76 @@ def HitBell()
     Bell.ChangeFrequency(mel_E)
     time.sleep(0.05)
     Bell.stop()
+    
+#もぐらがヒットしたときの楽譜
+def HitBell():
+    print("Hit!")
+    print(Hits)
+    Bell.start(50)
+    Bell.ChangeFrequency(mel_C * 2)
+    time.sleep(0.25)
+    Bell.ChangeFrequency(mel_D * 2)
+    time.sleep(0.25)
+    Bell.ChangeFrequency(mel_E * 3)
+    time.sleep(0.25)
+    Bell.stop()
 
-def MissBell()
+#クリアした時の楽譜(よろこびの歌のつもり)
+def YahooBell():
+    print("Game Clear!")
+    Bell.start(50)
+    Bell.ChangeFrequency(mel_E * 2)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_E * 2)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_F * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_G * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_G * 2)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_F * 2)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_E * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_D * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_C * 3)
+    time.sleep(0.3)
+    Bell.ChangeFrequency(mel_C * 3)
+    time.sleep(0.3)
+    Bell.stop()
+    
+def MissBell():
+    print("Miss")
     Bell.start(50)
     Bell.ChangeFrequency(100)
     time.sleep(0.05)
     Bell.stop()
 
-def Hit()
+def Hit():
+    print("Hit")
+    global Hits
     HitBell()
     Hits += 1
-
-def UpdateLED()
+    
+#LEDの状態を更新する関数
+def UpdateLED():
     for i in range (0, 4):
         GPIO.output(LEDs[i], status_LED[i])
 
-if __name__ == '__main__'
+if __name__ == '__main__':
     print("programm start\n")
     try:
         while true:
             for i in range(0, Loop):
                 randTIME = rand.choice(wait_times1)
-
+                
+                randLED = random.randint(0,3)
+                status_LED[randLED] = True
+                UpdateLED()
                 for j in range(1, randTime):
                     #LEDをランダムに光らせる処理を書いてくだちい
-                    randLED = random.randint(0,3)
-                    status_LED[randLED] = True
-                    UpdateLED()
 
                     if (j == randTime - 1):
                         MissBell()
