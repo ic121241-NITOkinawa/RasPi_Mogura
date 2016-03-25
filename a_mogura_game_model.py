@@ -134,15 +134,12 @@ if __name__ == '__main__':
         while True:
             status_LD = False
             UpdateLED()
-            if(True):
-                StartBell() #ゲームスタートの楽譜を鳴らす
-                
+            StartBell() #ゲームスタートの楽譜を鳴らす
             Hits = 0    #ヒット数を初期化
             time.sleep(1)   #1秒止まる
 
             for i in range(0, Loop):    #Loop回繰り返す
                 randTime = random.choice(wait_times1)   #wait_times1秒後に光らせる
-
                 status_LD = True    #LEDの状態を発光へ
                 UpdateLED() #LEDの状態を更新
                 for j in range(1, randTime):    #randTime[ms]光る

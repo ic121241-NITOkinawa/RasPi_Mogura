@@ -6,6 +6,9 @@ import random
 #ボードの番号で設定(目で見て数えるやつ)
 GPIO.setmode(GPIO.BOARD)
 
+#すべてのGPIO番号を格納するやーつ
+GPIOs = [19, 21, 23, 27, 31, 33, 35, 37, 40]
+
 #LED定義
 LD0 = 19
 LD1 = 21
@@ -169,13 +172,12 @@ if __name__ == '__main__':
                 randLED = random.randint(0,3)
                 status_LED[randLED] = True
                 UpdateLED()
-                for j in range(1, randTime):
-                    #LEDをランダムに光らせる処理を書いてくだちい
 
+                for j in range(1, randTime):
                     if (j == randTime - 2): #最後まで押せなかったらミスとみなす
                         MissBell()
 
-                    elif (GPIO.input(SW0) and GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3)):
+                    elif (GPIO.input(SW0) and GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3)): #全押し回避
                         MissBell()
                         MissBell()
                         break
@@ -183,22 +185,34 @@ if __name__ == '__main__':
                     elif ((status_LD[0] and GPIO.input(SW1)) or 
                           (status_LD[1] and GPIO.input(SW2)) or 
                           (status_LD[2] and GPIO.input(SW3)) or 
-                          (status_LD[3] and GPIO.input(SW4))):
+                          (status_LD[3] and GPIO.input(SW4))):  #当たり判定
                         Hit()
                         break
 
                     else:
-                        time.sleep(0.0001)
+                        time.sleep(0.001)
 
                 status_LED[randLED] = False
                 UpdateLED()
-                randTIME = rand.choice(wait_times0)
-                sleep(randTIME)
 
-    except KeyboardInterrupt:
-        print("detect key interrupt\n")
+                randTIME = rand.choice(wait_times0) #インターバルの時間を決める
+                sleep(randTIME) #インターバル発生
+
+                if (Hits > 0):  #ゲームクリア条件を満たせばなる
+                    YahooBell()
+                else:           #ゲームクリアじゃなければなる
+                    MissBell()
+                    MissBell()
+                    MissBell()
+
+                time.sleep(1)   #オーバーヘッドの関係で入れないと落ちる
+
+    except :    #もっぱらキーボードインタラプト(C-c)用
+        print("some except happend!(クソコメ)")
 
     finally:
         BELL.stop()
-        GPIO.cleanup()
-        print("program exit\n")
+        for i in range(0, 9):
+            GPIO.cleanup(i)
+
+        print("program exit")
