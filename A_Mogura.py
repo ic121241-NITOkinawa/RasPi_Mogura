@@ -33,15 +33,15 @@ GPIO.setup(SW1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(SW2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(SW3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-#スピーカー定義
+#スピーカーのポート定義
 SP = 40
 #スピーカーのポート宣言
 GPIO.setup(SP, GPIO.OUT)
 
 #PWMインスタンス生成
-BELL = GPIO.PWM(SP, 30)
-BELL.start(50) #デューティーサイクル50%固定
-BELL.stop()
+Bell = GPIO.PWM(SP, 30)
+Bell.start(50) #デューティーサイクル50%固定
+Bell.stop()
 
 #平均(しかも切り上げ)律音階周波数
 mel_C = 262 #ド
@@ -53,7 +53,7 @@ mel_A = 440 #ラ
 mel_B = 494 #シ
 
 #LEDステータス用の変数
-status_LD = [False, False, False, False]
+status_LED = [False, False, False, False]
 
 #時間ランダム用の時間
 wait_times0 = [0.700, 1.000, 1.500, 1.800]
@@ -83,14 +83,6 @@ def StartBell():
     Bell.start(20)
     Bell.ChangeFrequency(mel_C * 6)
     time.sleep(0.5)
-    Bell.stop()def HitBell()
-    Bell.start(0.05)
-    Bell.ChangeFrequency(mel_C)
-    time.sleep(0.05)
-    Bell.ChangeFrequency(mel_D)
-    time.sleep(0.05)
-    Bell.ChangeFrequency(mel_E)
-    time.sleep(0.05)
     Bell.stop()
     
 #もぐらがヒットしたときの楽譜
@@ -104,6 +96,20 @@ def HitBell():
     time.sleep(0.25)
     Bell.ChangeFrequency(mel_E * 3)
     time.sleep(0.25)
+    Bell.stop()
+
+#もぐらをヒットできなかった時の音楽
+def MissBell():
+    print("Miss")
+    print(Hits)
+    Bell.start(50)
+    Bell.ChangeFrequency(100)
+    time.sleep(0.05)
+    Bell.stop()
+    time.sleep(0.05)
+    Bell.start(50)
+    Bell.ChangeFrequency(100)
+    time.sleep(0.05)
     Bell.stop()
 
 #クリアした時の楽譜(よろこびの歌のつもり)
@@ -132,13 +138,7 @@ def YahooBell():
     time.sleep(0.3)
     Bell.stop()
     
-def MissBell():
-    print("Miss")
-    Bell.start(50)
-    Bell.ChangeFrequency(100)
-    time.sleep(0.05)
-    Bell.stop()
-
+#もぐらがヒットした時の処理
 def Hit():
     print("Hit")
     global Hits
@@ -153,9 +153,18 @@ def UpdateLED():
 if __name__ == '__main__':
     print("programm start\n")
     try:
+        #無限ループ
         while true:
+            status_LD = [False, False, False, False]
+            UpdateLED()#LEDどもの状態をすべて消灯
+
+            StartBell()#ゲームスタートの楽譜を鳴らす
+
+            Hits = 0    #ヒット数を初期化
+            time.sleep(1)   #1秒止まる 
+
             for i in range(0, Loop):
-                randTIME = rand.choice(wait_times1)
+                randTime = rand.choice(wait_times1) #wait_times1[s]後に光る
                 
                 randLED = random.randint(0,3)
                 status_LED[randLED] = True
@@ -163,10 +172,10 @@ if __name__ == '__main__':
                 for j in range(1, randTime):
                     #LEDをランダムに光らせる処理を書いてくだちい
 
-                    if (j == randTime - 1):
+                    if (j == randTime - 2): #最後まで押せなかったらミスとみなす
                         MissBell()
+
                     elif (GPIO.input(SW0) and GPIO.input(SW1) and GPIO.input(SW2) and GPIO.input(SW3)):
-                        MissBell()
                         MissBell()
                         MissBell()
                         break
@@ -179,8 +188,7 @@ if __name__ == '__main__':
                         break
 
                     else:
-                        MissBell()
-                        time.sleep(0.002)
+                        time.sleep(0.0001)
 
                 status_LED[randLED] = False
                 UpdateLED()
