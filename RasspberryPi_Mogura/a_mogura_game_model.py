@@ -96,7 +96,7 @@ def MissBell():
 
 #クリアした時の楽譜(よろこびの歌のつもり)
 def YahooBell():
-#    print("clear!")
+    print("clear!")
     Bell.start(50)
     Bell.ChangeFrequency(mel_E * 2)
     time.sleep(0.3)
@@ -128,13 +128,33 @@ def Hit():
 
 #LEDの状態を更新する関数
 def UpdateLED():
+    print("UpdateLED")
     GPIO.output(LD0, status_LD)
+
+def is_hit():
+    print("is_hit func")
+    if (status_LD and (not GPIO.input(SW0))): #光らせてるLEDに対応したスイッチが押されてたらヒット!   
+        status_LD = False   #LEDの状態を消灯へ
+        UpdateLED() #LEDの状態を更新
+        Hit()
+        break
+
+GPIO.add_event_detect(LD0, GPIO.FALLNG, is_hit, 100)
+
 
 if __name__ == '__main__':
     print("programm start\n")
     try:
-        #無限ループ
-        while True:
+        while True: #無限ループ
+            while True:
+                status_LD = True
+                UpdateLED()
+                sleep(0.1)
+                status_LD = False
+                UpdateLED()
+                if (GPIO.input(SW0)):
+                    break
+
             status_LD = False
             UpdateLED()
             StartBell() #ゲームスタートの楽譜を鳴らす
@@ -147,13 +167,7 @@ if __name__ == '__main__':
                 UpdateLED() #LEDの状態を更新
 
                 for j in range(1, randTime):    #randTime[ms]光る
-                    if (status_LD and (not GPIO.input(SW0))): #光らせてるLEDに対応したスイッチが押されてたらヒット!   
-                        status_LD = False   #LEDの状態を消灯へ
-                        UpdateLED() #LEDの状態を更新
-                        Hit()
-                        break
-                        
-                    elif (j == randTime - 2): #最後まで押せなかったらミス
+                    if (j == randTime - 2): #最後まで押せなかったらミス
                         status_LD = False   #LEDの状態を消灯へ
                         UpdateLED() #LEDの状態を更新
                         MissBell()  #ミスした楽譜を鳴らす
