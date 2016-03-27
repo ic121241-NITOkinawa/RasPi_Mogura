@@ -40,13 +40,10 @@ mel_B = 494 #シ
 #LEDステータス用の変数
 status_LD = False
 
-#長押し対策用の変数
-hold_sw0 = [True, True]  #プルアップなのでこれはOFF, OFF
-
 #インターバル用のリスト[s]
-wait_times0 = [0.70, 1.00, 1.50, 1.80]
+wait_times0 = [0.70, 1.0, 1.5, 2.0]
 #光ってる時間のリスト[ms]
-wait_times1 = [500, 700, 900, 1200]
+wait_times1 = [250, 500, 700, 900]
 #LEDランダム用の変数
 LEDs = [19]
 
@@ -57,6 +54,7 @@ Loop = 10
 
 #ゲームスタートのときの楽譜
 def StartBell():
+#    print("StartBell func")
     Bell.start(50)
     Bell.ChangeFrequency(mel_C * 4)
     time.sleep(0.2)
@@ -74,20 +72,20 @@ def StartBell():
 
 #もぐらがヒットしたときの楽譜
 def HitBell():
-    print("Hit!")
+#    print("Hit!")
     print(Hits)
     Bell.start(50)
     Bell.ChangeFrequency(mel_C * 2)
-    time.sleep(0.25)
+    time.sleep(0.15)
     Bell.ChangeFrequency(mel_D * 2)
-    time.sleep(0.25)
+    time.sleep(0.15)
     Bell.ChangeFrequency(mel_E * 3)
-    time.sleep(0.25)
+    time.sleep(0.15)
     Bell.stop()
 
 #もぐらをヒットできなかったときの楽譜
 def MissBell():
-    print("Miss!")
+#    print("Miss!")
     print(Hits)
     Bell.start(50)
     Bell.ChangeFrequency(130)
@@ -96,7 +94,7 @@ def MissBell():
 
 #クリアした時の楽譜(よろこびの歌のつもり)
 def YahooBell():
-    print("clear!")
+#    print("clear!")
     Bell.start(50)
     Bell.ChangeFrequency(mel_E * 2)
     time.sleep(0.3)
@@ -122,42 +120,44 @@ def YahooBell():
     
 #もぐらがヒットした時の関数
 def Hit():
+#    print("Hit func start")
     global Hits
     HitBell()
     Hits += 1
+#    print("Hit func end")
 
 #LEDの状態を更新する関数
 def UpdateLED():
-    print("UpdateLED")
+#    print("UpdateLED func start")
     GPIO.output(LD0, status_LD)
+#    print("UpdateLED func end")
 
 def start_brink():
+#    print("start_brinc func start")
     status_LD = True
     UpdateLED()
     sleep(0.1)
     status_LD = False 
     UpdateLED()
+#    print("start_brink func end")
 
-def is_hit():
-    print("is_hit func")
+def is_hit(self):
+#    print("is_hit func start")
+    global status_LD
     if (status_LD and (not GPIO.input(SW0))): #光らせてるLEDに対応したスイッチが押されてたらヒット!   
         status_LD = False   #LEDの状態を消灯へ
         UpdateLED() #LEDの状態を更新
         Hit()
-        break
+#    print("is_hit func end")
 
 if __name__ == "__main__":
-    print("programm start\n")
     try:
         while True: #無限ループ
-            GPIO.remove_event_detect(LD0)
-
-            while True:
-                start_brink()
-                if (GPIO.input(SW0)):
-                    break
-
-            GPIO.add_event_detect(LD0, GPIO.FALLNG, is_hit, 100)
+            time.sleep(3)
+            
+            print("program start")            
+            GPIO.remove_event_detect(SW0)            
+            GPIO.add_event_detect(SW0, GPIO.FALLING, is_hit, 100)
             status_LD = False
             UpdateLED()
             StartBell() #ゲームスタートの楽譜を鳴らす
@@ -170,7 +170,9 @@ if __name__ == "__main__":
                 UpdateLED() #LEDの状態を更新
 
                 for j in range(1, randTime):    #randTime[ms]光る
-                    if (j == randTime - 2): #最後まで押せなかったらミス
+                    if (GPIO.input(SW0) == False):
+                        break
+                    elif (j == randTime - 2): #最後まで押せなかったらミス
                         status_LD = False   #LEDの状態を消灯へ
                         UpdateLED() #LEDの状態を更新
                         MissBell()  #ミスした楽譜を鳴らす
@@ -181,6 +183,7 @@ if __name__ == "__main__":
                 randTIME = random.choice(wait_times0)   #インターバルをランダムに決める
                 time.sleep(randTIME)    #インターバル発生
 
+            time.sleep(0.1) #これいれないとオーバーヘッドのせいでクリアベルならない
             #Loop回光終わった後にクリアかどうか判定される
             if (Hits > 7):  #ゲームクリア条件
                 YahooBell() #達成していたらクリア楽譜を鳴らす
@@ -191,11 +194,11 @@ if __name__ == "__main__":
             time.sleep(0.1)#スリープ入れないとオーバーヘッドの関係でプログラムが落ちる
             
     except:#もっぱらキーボードインタラプト（C-c)用
-        print("detect key interrupt\n")
+        print("some except happen")
 
     finally:
         Bell.stop()
         GPIO.cleanup(LD0)
         GPIO.cleanup(SW0)
         GPIO.cleanup(SP)
-        print("program exit\n")
+        print("program exit")
