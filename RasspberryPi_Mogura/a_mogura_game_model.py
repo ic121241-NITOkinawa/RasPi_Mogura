@@ -131,6 +131,13 @@ def UpdateLED():
     print("UpdateLED")
     GPIO.output(LD0, status_LD)
 
+def start_brink():
+    status_LD = True
+    UpdateLED()
+    sleep(0.1)
+    status_LD = False 
+    UpdateLED()
+
 def is_hit():
     print("is_hit func")
     if (status_LD and (not GPIO.input(SW0))): #光らせてるLEDに対応したスイッチが押されてたらヒット!   
@@ -139,22 +146,18 @@ def is_hit():
         Hit()
         break
 
-GPIO.add_event_detect(LD0, GPIO.FALLNG, is_hit, 100)
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("programm start\n")
     try:
         while True: #無限ループ
+            GPIO.remove_event_detect(LD0)
+
             while True:
-                status_LD = True
-                UpdateLED()
-                sleep(0.1)
-                status_LD = False
-                UpdateLED()
+                start_brink()
                 if (GPIO.input(SW0)):
                     break
 
+            GPIO.add_event_detect(LD0, GPIO.FALLNG, is_hit, 100)
             status_LD = False
             UpdateLED()
             StartBell() #ゲームスタートの楽譜を鳴らす
