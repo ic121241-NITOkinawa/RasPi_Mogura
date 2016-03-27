@@ -132,6 +132,10 @@ def UpdateLED():
     GPIO.output(LD0, status_LD)
 #    print("UpdateLED func end")
 
+def dark_led():
+    status_LD = False
+    UpdateLED()
+
 def start_brink():
 #    print("start_brinc func start")
     status_LD = True
@@ -141,6 +145,7 @@ def start_brink():
     UpdateLED()
 #    print("start_brink func end")
 
+#当たり判定
 def is_hit(self):
 #    print("is_hit func start")
     global status_LD
@@ -150,16 +155,35 @@ def is_hit(self):
         Hit()
 #    print("is_hit func end")
 
+#イベント削除用
+def remove_events():
+    global SW0
+    GPIO.remove_event_detect(SW0)
+
+#イベント追加用
+def add_events()
+    global SW0
+    GPIO.add_event_detect(SW0, GPIO.FALLING, is_hit, 100)
+
+#プログラム終了の際GPIOを解除
+def cleanup_GPIOs():
+    Bell.stop()
+    GPIO.cleanup(LD0)
+    GPIO.cleanup(SW0)
+    GPIO.cleanup(SP)
+
 if __name__ == "__main__":
     try:
         while True: #無限ループ
-            time.sleep(3)
+            remove_events()
+            time.sleep(1.5)
+            
+            if (GPIO.input(SW0) == False):
+                break
             
             print("program start")            
-            GPIO.remove_event_detect(SW0)            
-            GPIO.add_event_detect(SW0, GPIO.FALLING, is_hit, 100)
-            status_LD = False
-            UpdateLED()
+            add_events()
+            dark_LED()
             StartBell() #ゲームスタートの楽譜を鳴らす
             Hits = 0    #ヒット数を初期化
             time.sleep(1)   #1秒止まる
@@ -173,22 +197,20 @@ if __name__ == "__main__":
                     if (GPIO.input(SW0) == False):
                         break
                     elif (j == randTime - 2): #最後まで押せなかったらミス
-                        status_LD = False   #LEDの状態を消灯へ
-                        UpdateLED() #LEDの状態を更新
+                        dark_LED()
                         MissBell()  #ミスした楽譜を鳴らす
                         break
 
                     time.sleep(0.001)   #1msの遅延を与える,randTime回積み重なるので
                                         #randTime秒の出来事となる
-                randTIME = random.choice(wait_times0)   #インターバルをランダムに決める
-                time.sleep(randTIME)    #インターバル発生
+                time.sleep(random.choice(wait_times0))    #ランダムにインターバル発生
 
             time.sleep(0.1) #これいれないとオーバーヘッドのせいでクリアベルならない
             #Loop回光終わった後にクリアかどうか判定される
             if (Hits > 7):  #ゲームクリア条件
                 YahooBell() #達成していたらクリア楽譜を鳴らす
             else :  #条件を満たしていなかったら
-                MissBell()  #ミス譜面を鳴らす
+                for i in range(3):
                 MissBell()  #ミス譜面を鳴らす
 
             time.sleep(0.1)#スリープ入れないとオーバーヘッドの関係でプログラムが落ちる
@@ -197,8 +219,5 @@ if __name__ == "__main__":
         print("some except happen")
 
     finally:
-        Bell.stop()
-        GPIO.cleanup(LD0)
-        GPIO.cleanup(SW0)
-        GPIO.cleanup(SP)
+        cleanup_GPIOs()
         print("program exit")
