@@ -25,11 +25,12 @@ GPIO.setup(SP, GPIO.OUT)
 
 #PWMインスタンス生成
 Bell = GPIO.PWM(SP, 30)
-Bell.start(50) #デューティーサイクル50%
-Bell.stop()
+#Bell.start(50) #デューティーサイクル50%
+#Bell.stop()
 
 #平均(しかも切り上げ)律音階周波数
 mel_C = 262 #ド
+mel_Cu= 277 #ド#
 mel_D = 294 #レ
 mel_E = 330 #ミ
 mel_F = 349 #ファ
@@ -66,7 +67,7 @@ def StartBell():
     Bell.stop()
     time.sleep(0.2)
     Bell.start(20)
-    Bell.ChangeFrequency(mel_C * 6)
+    Bell.ChangeFrequency(mel_C * 8)
     time.sleep(0.5)
     Bell.stop()
 
@@ -95,6 +96,7 @@ def MissBell():
 #クリアした時の楽譜(よろこびの歌のつもり)
 def YahooBell():
 #    print("clear!")
+    time.sleep(0.1)
     Bell.start(50)
     Bell.ChangeFrequency(mel_E * 2)
     time.sleep(0.3)
@@ -132,10 +134,12 @@ def UpdateLED():
     GPIO.output(LD0, status_LD)
 #    print("UpdateLED func end")
 
+#LEDを(すべて)消灯させる関数
 def dark_led():
     status_LD = False
     UpdateLED()
 
+#ゲームが始まった時にLEDを光らせる関数
 def start_brink():
 #    print("start_brinc func start")
     status_LD = True
@@ -160,10 +164,27 @@ def remove_events():
     global SW0
     GPIO.remove_event_detect(SW0)
 
-#イベント追加用
+#イベント追加用(ゲーム用のボタン割込認識のための関数)
 def add_events()
     global SW0
     GPIO.add_event_detect(SW0, GPIO.FALLING, is_hit, 100)
+
+#ゲーム始める時の関数 LEDの初期化 割り込みイベントの追加 ヒット回数の初期化
+def game_start_set():
+    global Hits
+    add_events()
+    dark_LED()
+    StartBell() #ゲームスタートの楽譜を鳴らす
+    Hits = 0    #ヒット数を初期化
+
+#ゲームが終わった時に呼ばれる ヒット数で音が変わる
+def game_over():
+    global Hits
+        if (Hits > 7):  #ゲームクリア条件
+            YahooBell() #達成していたらクリア楽譜を鳴らす
+        else :  #条件を満たしていなかったら
+            for i in range(3):
+                MissBell()  #ミス譜面を鳴らす
 
 #プログラム終了の際GPIOを解除
 def cleanup_GPIOs():
@@ -175,17 +196,19 @@ def cleanup_GPIOs():
 if __name__ == "__main__":
     try:
         while True: #無限ループ
+            print("program start")            
             remove_events()
             time.sleep(1.5)
             
             if (GPIO.input(SW0) == False):
                 break
             
-            print("program start")            
-            add_events()
-            dark_LED()
-            StartBell() #ゲームスタートの楽譜を鳴らす
-            Hits = 0    #ヒット数を初期化
+            for i in range(0,10000, 1):
+                if (GPIO.input(SW0) == False):
+                    break
+                time.sleep(0.1)
+
+            game_start_set()
             time.sleep(1)   #1秒止まる
 
             for i in range(0, Loop):    #Loop回繰り返す
@@ -201,18 +224,10 @@ if __name__ == "__main__":
                         MissBell()  #ミスした楽譜を鳴らす
                         break
 
-                    time.sleep(0.001)   #1msの遅延を与える,randTime回積み重なるので
-                                        #randTime秒の出来事となる
+                    time.sleep(0.001)   #1msの遅延を与える,randTime回積み重なるので#randTime秒の出来事となる
                 time.sleep(random.choice(wait_times0))    #ランダムにインターバル発生
 
-            time.sleep(0.1) #これいれないとオーバーヘッドのせいでクリアベルならない
-            #Loop回光終わった後にクリアかどうか判定される
-            if (Hits > 7):  #ゲームクリア条件
-                YahooBell() #達成していたらクリア楽譜を鳴らす
-            else :  #条件を満たしていなかったら
-                for i in range(3):
-                MissBell()  #ミス譜面を鳴らす
-
+            game_over()
             time.sleep(0.1)#スリープ入れないとオーバーヘッドの関係でプログラムが落ちる
             
     except:#もっぱらキーボードインタラプト（C-c)用
