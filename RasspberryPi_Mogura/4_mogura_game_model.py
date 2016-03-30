@@ -199,6 +199,12 @@ def is_hit(self):   #ダウンエッジの時にしか呼ばれないし,多分�
         (status_LEDs[3] and not GPIO.input(SWCHs[3])) ): #光らせてるLEDに対応したスイッチが押されてたらヒット!   
         dark_led()  #全部のLEDを消灯
         Hit()       #ヒット関数呼び出し
+    elif (not (GPIO.input(SW0) and GPIO.input(SW1)) or
+          not (GPIO.input(SW1) and GPIO.input(SW2)) or
+          not (GPIO.input(SW2) and GPIO.input(SW3)) or
+          not (GPIO.input(SW3) and GPIO.input(SW0))): #全押し回避
+        MissBell()
+        MissBell()
 #    print("is_hit func end")
 
 #イベント削除用
