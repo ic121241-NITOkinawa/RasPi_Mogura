@@ -136,6 +136,8 @@ def UpdateLED():
 
 #LEDを(すべて)消灯させる関数
 def dark_led():
+    print("dark_led")
+    global status_LD
     status_LD = False
     UpdateLED()
 
@@ -153,7 +155,7 @@ def start_brink():
 def is_hit(self):
 #    print("is_hit func start")
     global status_LD
-    if (status_LD and (not GPIO.input(SW0))): #光らせてるLEDに対応したスイッチが押されてたらヒット!   
+    if (status_LD and not GPIO.input(SW0)): #光らせてるLEDに対応したスイッチが押されてたらヒット!   
         status_LD = False   #LEDの状態を消灯へ
         UpdateLED() #LEDの状態を更新
         Hit()
@@ -161,33 +163,38 @@ def is_hit(self):
 
 #イベント削除用
 def remove_events():
+    print("rmove_events")
     global SW0
     GPIO.remove_event_detect(SW0)
 
 #イベント追加用(ゲーム用のボタン割込認識のための関数)
-def add_events()
+def add_events():
+    print("add_events")
     global SW0
     GPIO.add_event_detect(SW0, GPIO.FALLING, is_hit, 100)
 
 #ゲーム始める時の関数 LEDの初期化 割り込みイベントの追加 ヒット回数の初期化
 def game_start_set():
+    print("game_start_set")
     global Hits
     add_events()
-    dark_LED()
+    dark_led()
     StartBell() #ゲームスタートの楽譜を鳴らす
     Hits = 0    #ヒット数を初期化
 
 #ゲームが終わった時に呼ばれる ヒット数で音が変わる
 def game_over():
+    print("game_over")
     global Hits
-        if (Hits > 7):  #ゲームクリア条件
-            YahooBell() #達成していたらクリア楽譜を鳴らす
-        else :  #条件を満たしていなかったら
-            for i in range(3):
-                MissBell()  #ミス譜面を鳴らす
+    if (Hits > 7):  #ゲームクリア条件
+        YahooBell() #達成していたらクリア楽譜を鳴らす
+    else :  #条件を満たしていなかったら
+        for i in range(3):
+            MissBell()  #ミス譜面を鳴らす
 
 #プログラム終了の際GPIOを解除
 def cleanup_GPIOs():
+    print "cleanup_GPIOs"
     Bell.stop()
     GPIO.cleanup(LD0)
     GPIO.cleanup(SW0)
@@ -198,16 +205,16 @@ if __name__ == "__main__":
         while True: #無限ループ
             print("program start")            
             remove_events()
-            time.sleep(1.5)
-            
+
+            for i in range(0, 10000):
+                if (GPIO.input(SW0) == False):
+                    break;
+                time.sleep(0.1)
+
+            time.sleep(1)
             if (GPIO.input(SW0) == False):
                 break
             
-            for i in range(0,10000, 1):
-                if (GPIO.input(SW0) == False):
-                    break
-                time.sleep(0.1)
-
             game_start_set()
             time.sleep(1)   #1秒止まる
 
@@ -220,7 +227,7 @@ if __name__ == "__main__":
                     if (GPIO.input(SW0) == False):
                         break
                     elif (j == randTime - 2): #最後まで押せなかったらミス
-                        dark_LED()
+                        dark_led()
                         MissBell()  #ミスした楽譜を鳴らす
                         break
 
@@ -230,8 +237,8 @@ if __name__ == "__main__":
             game_over()
             time.sleep(0.1)#スリープ入れないとオーバーヘッドの関係でプログラムが落ちる
             
-    except:#もっぱらキーボードインタラプト（C-c)用
-        print("some except happen")
+    except Exception as e:#もっぱらキーボードインタラプト（C-c)用
+        print e
 
     finally:
         cleanup_GPIOs()
