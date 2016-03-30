@@ -6,27 +6,52 @@ import random
 #ボードの番号で設定(目で見て数えるやつ)
 GPIO.setmode(GPIO.BOARD)
 
+#スイッチとかLEDとかの配列
+LEDs  = [19, 21, 23, 27]
+SWCHs = [31, 33, 35, 37]
+SPKR  = [40]
+
+#すべてのGPIO番号を格納するやーつ
+GPIOs = LEDs + SWCHs + SPKR
+
 #LED定義
-LD0 = 19
+LD0 = LEDs[0]
+LD1 = LEDs[1]
+LD2 = LEDs[2]
+LD3 = LEDs[3]
+
+#LEDステータス用の変数
+status_LEDs = [False, False, False, False]
+
 #LEDのポート宣言
 GPIO.setup(LD0, GPIO.OUT)
+GPIO.setup(LD1, GPIO.OUT)
+GPIO.setup(LD2, GPIO.OUT)
+GPIO.setup(LD3, GPIO.OUT)
 #LED消灯
 GPIO.output(LD0, GPIO.LOW)
+GPIO.output(LD1, GPIO.LOW)
+GPIO.output(LD2, GPIO.LOW)
+GPIO.output(LD3, GPIO.LOW)
 
 #SW定義
-SW0 = 37
+SW0 = SWCHs[0]
+SW1 = SWCHs[1]
+SW2 = SWCHs[2]
+SW3 = SWCHs[3]
 #SWのポート宣言
 GPIO.setup(SW0, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(SW1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(SW2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(SW3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 #スピーカー定義
-SP = 40
+SP = SPKR[0]
 #スピーカーのポート宣言
 GPIO.setup(SP, GPIO.OUT)
 
 #PWMインスタンス生成
 Bell = GPIO.PWM(SP, 30)
-#Bell.start(50) #デューティーサイクル50%
-#Bell.stop()
 
 #平均(しかも切り上げ)律音階周波数
 mel_C = 262 #ド
@@ -38,15 +63,10 @@ mel_G = 392 #ソ
 mel_A = 440 #ラ
 mel_B = 494 #シ
 
-#LEDステータス用の変数
-status_LD = False
-
 #インターバル用のリスト[s]
 wait_times0 = [0.70, 1.0, 1.5, 2.0]
 #光ってる時間のリスト[ms]
 wait_times1 = [250, 500, 700, 900]
-#LEDランダム用の変数
-LEDs = [19]
 
 #成功回数
 Hits = 0
@@ -124,61 +144,86 @@ def YahooBell():
 def Hit():
 #    print("Hit func start")
     global Hits
-    HitBell()
-    Hits += 1
+
+    HitBell()   #ヒットした時の楽譜を鳴らす
+    Hits += 1   #ヒット回数をインクリメント
 #    print("Hit func end")
 
 #LEDの状態を更新する関数
 def UpdateLED():
 #    print("UpdateLED func start")
-    GPIO.output(LD0, status_LD)
+    for i in range(0, 4):   #4回繰り返す
+        GPIO.output(LEDs[i], status_LEDs[i])    #LEDの状態を1つずつ更新
 #    print("UpdateLED func end")
 
 #LEDを(すべて)消灯させる関数
 def dark_led():
     print("dark_led")
-    global status_LD
-    status_LD = False
-    UpdateLED()
+    global status_LEDs
+
+    status_LEDs = [False, False, False, False]  #LEDのステータス全部0V
+    UpdateLED() #LEDの状態を更新
 
 #ゲームが始まった時にLEDを光らせる関数
-def start_brink():
-#    print("start_brinc func start")
-    status_LD = True
-    UpdateLED()
-    sleep(0.1)
-    status_LD = False 
-    UpdateLED()
-#    print("start_brink func end")
+#LEDが一つづつ左に流れて右に流れていく
+def brink_LED_line():
+#    print("brink_LED_line func start")
+    global status_LEDs
+
+    for i in range(0, 4):
+        status_LEDs[i] = True
+        UpdateLED()
+        sleep(0.1)
+        status_LEDs[i] = False 
+        UpdateLED()
+
+    time.sleep(0.1)
+
+    for i in range(3, -1):
+        status_LEDs[i] = True
+        UpdateLED()
+        sleep(0.1)
+        status_LEDs[i] = False 
+        UpdateLED()
+#多分ここ全部で0.9秒強消費されてる
+#    print("brink_LED_line func end")
 
 #当たり判定
-def is_hit(self):
+def is_hit(self):   #ダウンエッジの時にしか呼ばれないし,多分全長押しは効かない
 #    print("is_hit func start")
-    global status_LD
-    if (status_LD and not GPIO.input(SW0)): #光らせてるLEDに対応したスイッチが押されてたらヒット!   
-        status_LD = False   #LEDの状態を消灯へ
-        UpdateLED() #LEDの状態を更新
-        Hit()
+    global status_LEDs
+
+    if ((status_LEDs[0] and not GPIO.input(SWCHs[0])) or
+        (status_LEDs[1] and not GPIO.input(SWCHs[1])) or
+        (status_LEDs[2] and not GPIO.input(SWCHs[2])) or
+        (status_LEDs[3] and not GPIO.input(SWCHs[3])) ): #光らせてるLEDに対応したスイッチが押されてたらヒット!   
+        dark_led()  #全部のLEDを消灯
+        Hit()       #ヒット関数呼び出し
 #    print("is_hit func end")
 
 #イベント削除用
 def remove_events():
     print("rmove_events")
-    global SW0
-    GPIO.remove_event_detect(SW0)
+    global SWCHs
+
+    for i in range(0, 4):   #4回繰り返す
+        GPIO.remove_event_detect(SWCHs[i])  #SW0~SW3の割り込み関数を除去
 
 #イベント追加用(ゲーム用のボタン割込認識のための関数)
 def add_events():
     print("add_events")
-    global SW0
-    GPIO.add_event_detect(SW0, GPIO.FALLING, is_hit, 100)
+    global SWCHs
+
+    for i in range(0, 4):   #4回繰り返す
+        GPIO.add_event_detect(SWCHs[i], GPIO.FALLING, is_hit, 100)  #SW0~SW3まで割り込み関数を付与
 
 #ゲーム始める時の関数 LEDの初期化 割り込みイベントの追加 ヒット回数の初期化
 def game_start_set():
     print("game_start_set")
     global Hits
-    add_events()
-    dark_led()
+
+    add_events()    #スイッチの割り込み関数を呼ぶ
+    dark_led()      #LEDをすべて消す
     StartBell() #ゲームスタートの楽譜を鳴らす
     Hits = 0    #ヒット数を初期化
 
@@ -186,45 +231,46 @@ def game_start_set():
 def game_over():
     print("game_over")
     global Hits
+
     if (Hits > 7):  #ゲームクリア条件
         YahooBell() #達成していたらクリア楽譜を鳴らす
     else :  #条件を満たしていなかったら
-        for i in range(3):
+        for i in range(3):  #三回
             MissBell()  #ミス譜面を鳴らす
 
 #プログラム終了の際GPIOを解除
 def cleanup_GPIOs():
     print "cleanup_GPIOs"
-    Bell.stop()
-    GPIO.cleanup(LD0)
-    GPIO.cleanup(SW0)
-    GPIO.cleanup(SP)
+    Bell.stop() #スピーカーのインスタンスを削除
+#    GPIO.cleanup(GPIOs)    #GPIOsの番号すべてを占有解除
+    for i in GPIOs: #GPIOsの中身を捜査してその番号を
+        GPIO.cleanup(i) #GPIO番号の占有解除
 
 if __name__ == "__main__":
     try:
         while True: #無限ループ
             print("program start")            
-            remove_events()
+            remove_events() #スイッチの割り込み関数削除
 
-            for i in range(0, 10000):
-                if (GPIO.input(SW0) == False):
+            for i in range(0, 10000):   #1000秒まってその間に
+                if (GPIO.input(SW0) == False):  #SW0が押してすぐ離せばゲームスタート
                     break;
                 time.sleep(0.1)
 
-            time.sleep(1)
-            if (GPIO.input(SW0) == False):
-                break
+           time.sleep(0.9)   #もし一秒(上の0.1秒を通過した後にこっちに来るから足して1秒)
+            if (GPIO.input(SW0) == False):  #長押ししていたら
+                break   #ゲーム終了
             
-            game_start_set()
-            time.sleep(1)   #1秒止まる
+            game_start_set()    #ゲームを開始するための処理を行う
+            time.sleep(1)   #フェイントの1秒止まる
 
             for i in range(0, Loop):    #Loop回繰り返す
                 randTime = random.choice(wait_times1)   #wait_times1秒後に光らせる
-                status_LD = True    #LEDの状態を発光へ
+                status_LEDs[random.randint(0, 3)] = True    #LEDの状態を発光へ
                 UpdateLED() #LEDの状態を更新
 
                 for j in range(1, randTime):    #randTime[ms]光る
-                    if (GPIO.input(SW0) == False):
+                    if (GPIO.input(SW0) == False):  #SW0が押されたら
                         break
                     elif (j == randTime - 2): #最後まで押せなかったらミス
                         dark_led()
